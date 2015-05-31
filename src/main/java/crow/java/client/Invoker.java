@@ -87,8 +87,8 @@ public class Invoker implements IInvoker {
     
     private Map<Keyword,Object> toServiceMap(IServiceInfo info) {
         Map<Keyword,Object> service = new HashMap<>();
-        service.put(Keyword.intern("address"), info.getAddress());
-        service.put(Keyword.intern("port"), (long) info.getPort());
+        service.put(Keyword.intern(null, "address"), info.getAddress());
+        service.put(Keyword.intern(null, "port"), (long) info.getPort());
         return service;
     }
 

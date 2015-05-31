@@ -40,7 +40,7 @@ public class WrapperServiceFinder implements IServiceFinder {
                     ? null 
                     : attributes.entrySet().stream().collect(
                         Collectors.toMap(
-                                e -> Keyword.intern(e.getKey()), 
+                                e -> Keyword.intern(null, e.getKey()), 
                                 e -> e.getValue()));
         
         List<Map<Keyword,Object>> result = (List<Map<Keyword,Object>>) fn.invoke(cljServiceFinder, serviceName, serviceAttr);
@@ -48,10 +48,10 @@ public class WrapperServiceFinder implements IServiceFinder {
             throw new ServiceNotFoundException(serviceName, attributes);
         } else {
             return result.stream().map(m -> {
-                String address = (String) m.get(Keyword.intern("address"));
-                Long port = (Long) m.get(Keyword.intern("port"));
-                String name = (String) m.get(Keyword.intern("name"));
-                Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern("attributes"));
+                String address = (String) m.get(Keyword.intern(null, "address"));
+                Long port = (Long) m.get(Keyword.intern(null, "port"));
+                String name = (String) m.get(Keyword.intern(null, "name"));
+                Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern(null, "attributes"));
                 Map<String,Object> convertedAttr = 
                         (attr == null)
                         ? null
