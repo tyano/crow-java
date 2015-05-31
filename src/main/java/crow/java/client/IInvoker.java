@@ -26,7 +26,15 @@ public interface IInvoker {
     <R> R withService(Class<R> clazz, IServiceInfo serviceInfo, String namespace, String fnName, Object... args);
     <R> R withFinder(Class<R> clazz, IServiceFinder serviceFinder, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException;
     <R> R invoke(Class<R> clazz, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException;
+    
+    default <R> R invokeNs(Class<R> clazz, String serviceName, String namespace, String fnName, Object... args) throws ServiceNotFoundException {
+        return invoke(clazz, serviceName, null, namespace, fnName, args);
+    }
 
+    default <R> R invokeSimple(Class<R> clazz, String serviceName, String fnName, Object... args) throws ServiceNotFoundException {
+        return invoke(clazz, serviceName, null, serviceName, fnName, args);
+    }
+    
     default <R> R withTimeout(int timeoutMs, Callable<R> call) {
         IFn timeoutFn = Clojure.var("crow.remote", "with-timeout-fn");
         return (R) timeoutFn.invoke(call);
