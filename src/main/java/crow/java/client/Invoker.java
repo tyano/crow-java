@@ -10,6 +10,7 @@
  */
 package crow.java.client;
 
+import clojure.core.async.impl.protocols.ReadPort;
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
 import clojure.lang.Keyword;
@@ -26,64 +27,77 @@ import java.util.Map;
  * @author Tsutomu Yano
  */
 public class Invoker implements IInvoker {
-    private static final IFn invokeFn = Clojure.var("crow.remote", "invoke");
+    private static final IFn invokeFn;
+    private static final IFn readChannelFn;
     
-    private final IServiceFinder finder;
+    static {
+        IFn requireFn = Clojure.var("clojure.core", "require");
+        requireFn.invoke(Clojure.read("crow.remote"));
+        invokeFn = Clojure.var("crow.remote", "invoke");
+        readChannelFn = Clojure.var("crow.remote", "<!!+");
+    }
 
+    private final IServiceFinder finder;
+    
     public Invoker(IServiceFinder finder) {
         if(finder == null) throw new IllegalArgumentException("'finder' must not be null.");
         this.finder = finder;
     }
     
-    private <R> R remoteCall(Class<R> clazz, Map<Keyword,Object> serviceMap, String namespace, String fnName, Object... args) {
+    private ReadPort invoke(Map<Keyword,Object> serviceMap, String namespace, String fnName, Object... args) {
         switch(args.length) {
             case 0:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName);
             case 1:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0]);
             case 2:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1]);
             case 3:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2]);
             case 4:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3]);
             case 5:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4]);
             case 6:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5]);
             case 7:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
             case 8:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
             case 9:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
             case 10:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
             case 11:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
             case 12:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
             case 13:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12]);
             case 14:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13]);
             case 15:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14]);
             case 16:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15]);
             case 17:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16]);
             case 18:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]);
             case 19:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18]);
             case 20:
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19]));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19]);
             default:
                 Object[] rest = Arrays.copyOfRange(args, 20, args.length);
-                return clazz.cast(invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], rest));
+                return (ReadPort) invokeFn.invoke(serviceMap, namespace, fnName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], rest);
         }
-    }    
+    }
+    
+    private <R> R remoteCall(Class<R> clazz, Map<Keyword,Object> serviceMap, String namespace, String fnName, Object... args) {
+        ReadPort ch = invoke(serviceMap, namespace, fnName, args);
+        return clazz.cast(readChannelFn.invoke(ch));
+    }
     
     private Map<Keyword,Object> toServiceMap(IServiceInfo info) {
         Map<Keyword,Object> service = new HashMap<>();
