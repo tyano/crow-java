@@ -26,6 +26,11 @@ import java.util.stream.Collectors;
 public class WrapperServiceFinder implements IServiceFinder {
     private final ServiceFinder cljServiceFinder;
 
+    static {
+        IFn requireFn = Clojure.var("clojure.core", "require");
+        requireFn.invoke(Clojure.read("crow.discovery"));
+    }
+    
     public WrapperServiceFinder(WrapperRegistrarSource registrarSource) {
         IFn fn = Clojure.var("crow.discovery", "service-finder");
         this.cljServiceFinder = (ServiceFinder) fn.invoke(registrarSource.getClojureRegistrarSource());
@@ -49,7 +54,8 @@ public class WrapperServiceFinder implements IServiceFinder {
         } else {
             return result.stream().map(m -> {
                 String address = (String) m.get(Keyword.intern(null, "address"));
-                Long port = (Long) m.get(Keyword.intern(null, "port"));
+                Number portVal = (Number) m.get(Keyword.intern(null, "port"));
+                Long port = portVal == null ? null : portVal.longValue();
                 String name = (String) m.get(Keyword.intern(null, "name"));
                 Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern(null, "attributes"));
                 Map<String,Object> convertedAttr = 
