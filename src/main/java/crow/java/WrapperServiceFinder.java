@@ -11,7 +11,9 @@
 package crow.java;
 
 import clojure.java.api.Clojure;
+import clojure.lang.ExceptionInfo;
 import clojure.lang.IFn;
+import clojure.lang.IPersistentMap;
 import clojure.lang.Keyword;
 import crow.discovery.ServiceFinder;
 import java.util.List;
@@ -30,7 +32,7 @@ public class WrapperServiceFinder implements IServiceFinder {
         IFn requireFn = Clojure.var("clojure.core", "require");
         requireFn.invoke(Clojure.read("crow.discovery"));
     }
-    
+
     public WrapperServiceFinder(WrapperRegistrarSource registrarSource) {
         IFn fn = Clojure.var("crow.discovery", "service-finder");
         this.cljServiceFinder = (ServiceFinder) fn.invoke(registrarSource.getClojureRegistrarSource());
@@ -39,26 +41,24 @@ public class WrapperServiceFinder implements IServiceFinder {
     @Override
     public List<IServiceInfo> discover(String serviceName, Map<String, Object> attributes) throws ServiceNotFoundException {
         IFn fn = Clojure.var("crow.discovery", "discover");
-        
-        Map<Keyword,Object> serviceAttr = 
+
+        Map<Keyword,Object> serviceAttr =
                 (attributes == null)
-                    ? null 
+                    ? null
                     : attributes.entrySet().stream().collect(
                         Collectors.toMap(
-                                e -> Keyword.intern(null, e.getKey()), 
+                                e -> Keyword.intern(null, e.getKey()),
                                 e -> e.getValue()));
-        
-        List<Map<Keyword,Object>> result = (List<Map<Keyword,Object>>) fn.invoke(cljServiceFinder, serviceName, serviceAttr);
-        if(result == null) {
-            throw new ServiceNotFoundException(serviceName, attributes);
-        } else {
+
+        try {
+            List<Map<Keyword,Object>> result = (List<Map<Keyword,Object>>) fn.invoke(cljServiceFinder, serviceName, serviceAttr);
             return result.stream().map(m -> {
                 String address = (String) m.get(Keyword.intern(null, "address"));
                 Number portVal = (Number) m.get(Keyword.intern(null, "port"));
                 Long port = portVal == null ? null : portVal.longValue();
                 String name = (String) m.get(Keyword.intern(null, "name"));
                 Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern(null, "attributes"));
-                Map<String,Object> convertedAttr = 
+                Map<String,Object> convertedAttr =
                         (attr == null)
                         ? null
                         : attr.entrySet().stream()
@@ -69,6 +69,14 @@ public class WrapperServiceFinder implements IServiceFinder {
 
                 return new ServiceInfo(address, port.intValue(), name, Optional.ofNullable(convertedAttr));
             }).collect(Collectors.toList());
+        } catch(ExceptionInfo ex) {
+            IPersistentMap data = ex.getData();
+            Object errorType = data.valAt(Keyword.intern(null, "type"));
+            if(errorType != null && errorType.equals(Keyword.intern("crow.discovery", "service-not-found"))) {
+                throw new ServiceNotFoundException(serviceName, attributes, ex);
+            } else {
+                throw ex;
+            }
         }
     }
 }
