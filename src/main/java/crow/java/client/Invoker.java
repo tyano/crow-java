@@ -24,6 +24,7 @@ import crow.remote.ServiceDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -61,10 +62,10 @@ public class Invoker implements IInvoker {
         return invoke(null, serviceMap, callDesc);
     }
 
-    private <R> R remoteCallWithService(Class<R> clazz, Map<Keyword,Object> serviceMap, String namespace, String fnName, Object... args) {
+    private <R> Optional<R> remoteCallWithService(Class<R> clazz, Map<Keyword,Object> serviceMap, String namespace, String fnName, Object... args) {
         CallDescriptor callDesc = new CallDescriptor(namespace, fnName, PersistentVector.create(args));
         ReadPort ch = invoke(serviceMap, callDesc);
-        return clazz.cast(readChannelFn.invoke(ch));
+        return Optional.ofNullable(clazz.cast(readChannelFn.invoke(ch)));
     }
 
     private Map<Keyword,Object> toServiceMap(IServiceInfo info) {
@@ -75,12 +76,12 @@ public class Invoker implements IInvoker {
     }
 
     @Override
-    public <R> R withService(Class<R> clazz, IServiceInfo serviceInfo, String namespace, String fnName, Object... args) {
+    public <R> Optional<R>  withService(Class<R> clazz, IServiceInfo serviceInfo, String namespace, String fnName, Object... args) {
         return remoteCallWithService(clazz, toServiceMap(serviceInfo), namespace, fnName, args);
     }
 
     @Override
-    public <R> R withFinder(Class<R> clazz, IServiceFinder serviceFinder, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException {
+    public <R> Optional<R>  withFinder(Class<R> clazz, IServiceFinder serviceFinder, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException {
         List<IServiceInfo> services = serviceFinder.discover(serviceName, attributes, null);
         IServiceInfo serviceInfo = services.get(0);
 
@@ -88,10 +89,10 @@ public class Invoker implements IInvoker {
     }
 
     @Override
-    public <R> R invoke(Class<R> clazz, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException {
+    public <R> Optional<R> invoke(Class<R> clazz, String serviceName, Map<String,Object> attributes, String namespace, String fnName, Object... args) throws ServiceNotFoundException {
         ReadPort ch = (ReadPort) chanFn.invoke();
         ServiceDescriptor serviceDesc = new ServiceDescriptor(serviceName, Utils.toKeywordMap(attributes));
         CallDescriptor callDesc = new CallDescriptor(namespace, fnName, PersistentVector.create(args));
-        return clazz.cast(tryCallFn.invoke(ch, serviceDesc, callDesc, null));
+        return Optional.ofNullable(clazz.cast(tryCallFn.invoke(ch, serviceDesc, callDesc, null)));
     }
 }
