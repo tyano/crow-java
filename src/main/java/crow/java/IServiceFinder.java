@@ -18,5 +18,5 @@ import java.util.Map;
  * @author Tsutomu Yano
  */
 public interface IServiceFinder {
-    List<IServiceInfo> discover(String serviceName, Map<String,Object> attributes) throws ServiceNotFoundException;
+    List<IServiceInfo> discover(String serviceName, Map<String,Object> attributes, Map<String,Object> options) throws ServiceNotFoundException;
 }

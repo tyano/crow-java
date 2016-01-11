@@ -19,7 +19,7 @@ import crow.discovery.ServiceFinder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -39,36 +39,27 @@ public class WrapperServiceFinder implements IServiceFinder {
     }
 
     @Override
-    public List<IServiceInfo> discover(String serviceName, Map<String, Object> attributes) throws ServiceNotFoundException {
+    public List<IServiceInfo> discover(String serviceName, Map<String, Object> attributes, Map<String,Object> options) throws ServiceNotFoundException {
         IFn fn = Clojure.var("crow.discovery", "discover");
 
-        Map<Keyword,Object> serviceAttr =
-                (attributes == null)
-                    ? null
-                    : attributes.entrySet().stream().collect(
-                        Collectors.toMap(
-                                e -> Keyword.intern(null, e.getKey()),
-                                e -> e.getValue()));
+        Map<Keyword,Object> serviceAttr = Utils.toKeywordMap(attributes);
+        Map<Keyword,Object> serviceOpt = Utils.toKeywordMap(options);
 
         try {
-            List<Map<Keyword,Object>> result = (List<Map<Keyword,Object>>) fn.invoke(cljServiceFinder, serviceName, serviceAttr);
+            @SuppressWarnings("unchecked")
+            List<Map<Keyword,Object>> result = (List<Map<Keyword,Object>>) fn.invoke(cljServiceFinder, serviceName, serviceAttr, serviceOpt);
             return result.stream().map(m -> {
-                String address = (String) m.get(Keyword.intern(null, "address"));
-                Number portVal = (Number) m.get(Keyword.intern(null, "port"));
-                Long port = portVal == null ? null : portVal.longValue();
-                String name = (String) m.get(Keyword.intern(null, "name"));
-                Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern(null, "attributes"));
-                Map<String,Object> convertedAttr =
-                        (attr == null)
-                        ? null
-                        : attr.entrySet().stream()
-                            .collect(
-                                Collectors.toMap(
-                                        e -> e.getKey().getName(),
-                                        e -> e.getValue()));
+                String address = (String) m.get(Keyword.intern("address"));
+                Number portVal = (Number) m.get(Keyword.intern("port"));
+                Long port = Optional.ofNullable(portVal).map(Number::longValue).orElse(null);
+                String name = (String) m.get(Keyword.intern("name"));
+
+                @SuppressWarnings("unchecked")
+                Map<Keyword,Object> attr = (Map<Keyword,Object>) m.get(Keyword.intern("attributes"));
+                Map<String,Object> convertedAttr = Utils.toNameMap(attr);
 
                 return new ServiceInfo(address, port.intValue(), name, Optional.ofNullable(convertedAttr));
-            }).collect(Collectors.toList());
+            }).collect(toList());
         } catch(ExceptionInfo ex) {
             IPersistentMap data = ex.getData();
             Object errorType = data.valAt(Keyword.intern(null, "type"));
